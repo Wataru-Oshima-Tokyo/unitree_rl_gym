@@ -1,5 +1,5 @@
-<mujoco model="go2 scene">
-  <include file="go2.xml"/>
+<mujoco model="aliengo scene">
+  <include file="aliengo.xml"/>
 
   <statistic center="1.0 0.7 1.0" extent="0.8"/>
 
