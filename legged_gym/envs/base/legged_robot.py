@@ -106,7 +106,7 @@ class LeggedRobot(BaseTask):
         env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
         self.reset_idx(env_ids)
         self.compute_observations() # in some cases a simulation step might be required to refresh some obs (for example body positions)
-
+        print(self.default_dof_pos)
         self.last_actions[:] = self.actions[:]
         self.last_dof_vel[:] = self.dof_vel[:]
         self.last_root_vel[:] = self.root_states[:, 7:13]
@@ -173,7 +173,66 @@ class LeggedRobot(BaseTask):
             rew = self._reward_termination() * self.reward_scales["termination"]
             self.rew_buf += rew
             self.episode_sums["termination"] += rew
-    
+        # self.debug_robot_state()
+
+
+    def debug_robot_rigid_bodies(self):
+        """ Debug rigid body information for feet """
+        body_names = self.gym.get_actor_rigid_body_names(self.envs[0], self.actor_handles[0])
+        print(f"Rigid Body Names: {body_names}")
+        print(f"Feet Indices: {self.feet_indices}")
+        for i, index in enumerate(self.feet_indices):
+            print(f"Foot {i}: {body_names[index]}")
+
+    def debug_robot_state(self):
+        """ Debug function to print critical robot state variables and tensor shapes """
+        print("\n==== Debugging Go2Robot State ====")
+        
+        # Feet-related variables
+        print(f"Feet Indices: {self.feet_indices}")
+        # print(f"Feet Num: {self.feet_num}")
+        # print(f"Feet Positions Shape: {self.feet_pos.shape}")
+        # print(f"Feet Velocities Shape: {self.feet_vel.shape}")
+        # print(f"Feet Positions (Z-axis): {self.feet_pos[:, :, 2]}")  # Z-axis positions
+        
+        # Contact-related variables
+        print(f"Contact Forces Shape: {self.contact_forces.shape}")
+        print(f"Contact Forces (Feet): {self.contact_forces[:, self.feet_indices, :]}")
+        
+        # Observation buffers
+        print(f"Observation Buffer Shape: {self.obs_buf.shape}")
+        print(f"Privileged Observation Buffer Shape: {self.privileged_obs_buf.shape}")
+        print(f"Observation Buffer Sample: {self.obs_buf[0]}")
+        
+        # Phase-related variables
+        print(f"Phase Shape: {self.phase.shape}")
+        print(f"Phase Left: {self.phase_left[:5]}")
+        print(f"Phase Right: {self.phase_right[:5]}")
+        print(f"Leg Phase Shape: {self.leg_phase.shape}")
+        print(f"Leg Phase Sample: {self.leg_phase[:5]}")
+        
+        # Degrees of Freedom (DOF) variables
+        print(f"DOF Positions Shape: {self.dof_pos.shape}")
+        print(f"DOF Velocities Shape: {self.dof_vel.shape}")
+        print(f"DOF Positions Sample: {self.dof_pos[0]}")
+        print(f"DOF Velocities Sample: {self.dof_vel[0]}")
+        
+        # Actions
+        print(f"Num Actions: {self.num_actions}")
+        print(f"Actions Sample: {self.actions[0]}")
+        
+        # Rewards
+        print(f"Contact Reward: {self._reward_contact()}")
+        print(f"Feet Swing Height Reward: {self._reward_feet_swing_height()}")
+        print(f"Alive Reward: {self._reward_alive()}")
+        print(f"Contact No Velocity Reward: {self._reward_contact_no_vel()}")
+        print(f"Hip Position Reward: {self._reward_hip_pos()}")
+        
+        # Simulation Parameters
+        sim_params = self.gym.get_sim_params(self.sim)
+        print(f"Simulation Parameters: {sim_params}")
+        print("===================================")
+
     def compute_observations(self):
         """ Computes observations
         """
