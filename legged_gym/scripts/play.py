@@ -39,10 +39,29 @@ def play(args):
         export_policy_as_jit(ppo_runner.alg.actor_critic, path)
         print('Exported policy as jit script to: ', path)
 
-    for i in range(10*int(env.max_episode_length)):
+    for i in range(10 * int(env.max_episode_length)):
         actions = policy(obs.detach())
-        obs, _, rews, dones, infos = env.step(actions.detach())
+        print(f"\nStep {i + 1}")
+        print("Actions:")
+        print(actions)
 
+        # Debugging: Check step result
+        step_result = env.step(actions.detach())
+        print(f"Step result type: {type(step_result)}")
+        print(f"Number of values returned: {len(step_result)}")
+        print(f"Step result: {step_result}")
+
+        # Unpack only the needed values
+        obs, rewards, dones, infos = step_result[:4]
+
+        print("Observations:")
+        print(obs)
+        print("Rewards:")
+        print(rewards)
+        print("Dones:")
+        print(dones)
+        print("Infos:")
+        print(infos)
 if __name__ == '__main__':
     EXPORT_POLICY = True
     RECORD_FRAMES = False
