@@ -133,35 +133,35 @@
           </body>
         </body>
       </body>
-    </body>
+    
 
-    <!-- Rear Right Leg -->
-    <body name="RR_hip" pos="-0.2407 -0.051 0">
-      <inertial pos="0.022191 -0.015144 -1.5e-05" mass="1.993"
-        fullinertia="0.002446735 0.003925876 0.004148145 -0.00059805 -1.945e-06 -1.284e-06"/>
-      <joint name="RR_hip_joint" class="abduction"/>
-      <geom type="mesh" mesh="hip" material="black" class="visual" euler="3.1416 3.1416 0"/>
-      <geom type="cylinder" pos="0 -0.083 0" euler="1.5708 0 0" size="0.046 0.0209" class="collision"/>
-      <body name="RR_thigh" pos="0 -0.0868 0">
-        <inertial pos="-0.005607 0.003877 -0.048199" mass="0.639"
-          fullinertia="0.004173855 0.004343802 0.000340136 -1.0284e-05 -0.000318874 -0.000109233"/>
-        <joint name="RR_thigh_joint" class="back_hip"/>
-        <geom type="mesh" mesh="thigh_mirror" material="black" class="visual"/>
-        <geom type="box" size="0.125 0.0187 0.0215" pos="0 0 -0.125" euler="0 1.5708 0" class="collision"/>
-        <body name="RR_calf" pos="0 0 -0.25">
-          <inertial pos="0.002781 6.3e-05 -0.142518" mass="0.207"
-            fullinertia="0.002129279 0.002141463 3.7583e-05 3.9e-08 5.757e-06 -5.16e-07"/>
-          <joint name="RR_calf_joint" class="knee"/>
-          <geom type="mesh" mesh="calf" material="black" class="visual"/>
-          <geom type="box" size="0.125 0.0104 0.008" pos="0 0 -0.125" euler="0 1.5708 0" class="collision"/>
-          <geom name="RR" class="foot"/>
-          <body name="RR_foot" pos="0 0 -0.25" >
-              <inertial mass="0.00" pos="0 0 0" fullinertia="0.0001 0.0001 0.0001 0 0 0"/>
-          </body>  
+      <!-- Rear Right Leg -->
+      <body name="RR_hip" pos="-0.2407 -0.051 0">
+        <inertial pos="0.022191 -0.015144 -1.5e-05" mass="1.993"
+          fullinertia="0.002446735 0.003925876 0.004148145 -0.00059805 -1.945e-06 -1.284e-06"/>
+        <joint name="RR_hip_joint" class="abduction"/>
+        <geom type="mesh" mesh="hip" material="black" class="visual" euler="3.1416 3.1416 0"/>
+        <geom type="cylinder" pos="0 -0.083 0" euler="1.5708 0 0" size="0.046 0.0209" class="collision"/>
+        <body name="RR_thigh" pos="0 -0.0868 0">
+          <inertial pos="-0.005607 0.003877 -0.048199" mass="0.639"
+            fullinertia="0.004173855 0.004343802 0.000340136 -1.0284e-05 -0.000318874 -0.000109233"/>
+          <joint name="RR_thigh_joint" class="back_hip"/>
+          <geom type="mesh" mesh="thigh_mirror" material="black" class="visual"/>
+          <geom type="box" size="0.125 0.0187 0.0215" pos="0 0 -0.125" euler="0 1.5708 0" class="collision"/>
+          <body name="RR_calf" pos="0 0 -0.25">
+            <inertial pos="0.002781 6.3e-05 -0.142518" mass="0.207"
+              fullinertia="0.002129279 0.002141463 3.7583e-05 3.9e-08 5.757e-06 -5.16e-07"/>
+            <joint name="RR_calf_joint" class="knee"/>
+            <geom type="mesh" mesh="calf" material="black" class="visual"/>
+            <geom type="box" size="0.125 0.0104 0.008" pos="0 0 -0.125" euler="0 1.5708 0" class="collision"/>
+            <geom name="RR" class="foot"/>
+            <body name="RR_foot" pos="0 0 -0.25" >
+                <inertial mass="0.00" pos="0 0 0" fullinertia="0.0001 0.0001 0.0001 0 0 0"/>
+            </body>  
+          </body>
         </body>
       </body>
     </body>
-
 
   </worldbody>
 
