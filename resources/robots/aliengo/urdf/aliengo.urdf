@@ -115,7 +115,7 @@
       <inertia ixx="0.002129279" ixy="3.9e-08" ixz="5.757e-06" iyy="0.002141463" iyz="-5.16e-07" izz="3.7583e-05"/>
     </inertial>
   </link>
-  <joint name="FL_foot_joint" type="fixed">
+  <joint name="FL_foot_joint" type="fixed" dont_collapse="true">
     <origin rpy="0 0 0" xyz="0 0 -0.25"/>
     <parent link="FL_calf"/>
     <child link="FL_foot"/>
@@ -225,7 +225,7 @@
       <inertia ixx="0.002129279" ixy="3.9e-08" ixz="5.757e-06" iyy="0.002141463" iyz="-5.16e-07" izz="3.7583e-05"/>
     </inertial>
   </link>
-  <joint name="FR_foot_joint" type="fixed">
+  <joint name="FR_foot_joint" type="fixed" dont_collapse="true">
     <origin rpy="0 0 0" xyz="0 0 -0.25"/>
     <parent link="FR_calf"/>
     <child link="FR_foot"/>
@@ -337,7 +337,7 @@
       <inertia ixx="0.002129279" ixy="3.9e-08" ixz="5.757e-06" iyy="0.002141463" iyz="-5.16e-07" izz="3.7583e-05"/>
     </inertial>
   </link>
-  <joint name="RL_foot_joint" type="fixed">
+  <joint name="RL_foot_joint" type="fixed" dont_collapse="true">
     <origin rpy="0 0 0" xyz="0 0 -0.25"/>
     <parent link="RL_calf"/>
     <child link="RL_foot"/>
@@ -448,7 +448,7 @@
       <inertia ixx="0.002129279" ixy="3.9e-08" ixz="5.757e-06" iyy="0.002141463" iyz="-5.16e-07" izz="3.7583e-05"/>
     </inertial>
   </link>
-  <joint name="RR_foot_joint" type="fixed">
+  <joint name="RR_foot_joint" type="fixed" dont_collapse="true">
     <origin rpy="0 0 0" xyz="0 0 -0.25"/>
     <parent link="RR_calf"/>
     <child link="RR_foot"/>

@@ -42,37 +42,38 @@ class ALIENGOFlatCfg( LeggedRobotCfg ):
         soft_dof_pos_limit = 0.9
         base_height_target = 0.43
         only_positive_rewards = True # if true negative total rewards are clipped at zero (avoids early termination problems)
-        # class scales( LeggedRobotCfg.rewards.scales ):
-        #     torques = -0.0002
-        #     dof_pos_limits = -10.0
-        #     # torques = -0.00001
-        #     # dof_pos_limits = -10.0
-        #     # base_height = -10.0
-        #     # orientation = -1.0
         class scales( LeggedRobotCfg.rewards.scales ):
-            tracking_lin_vel = 1.0
-            tracking_ang_vel = 0.5
-            lin_vel_z = -2.0
-            ang_vel_xy = -0.05
-            orientation = -1.0
-            base_height = -10.0
-            dof_acc = -2.5e-7
-            dof_vel = -1e-3
-            feet_air_time = 0.0
-            collision = 0.0
-            action_rate = -0.01
-            dof_pos_limits = -5.0
-            # alive = 0.15
-            # hip_pos = -1.0
-            # contact_no_vel = -0.2
-            # feet_swing_height = -20.0
-            # contact = 0.18
+            torques = -0.0002
+            dof_pos_limits = -10.0
+            # collision = 0.0
+            # torques = -0.00001
+            # dof_pos_limits = -10.0
+            # base_height = -10.0
+            # orientation = -1.0
+        # class scales( LeggedRobotCfg.rewards.scales ):
+        #     # tracking_lin_vel = 1.0
+        #     # tracking_ang_vel = 0.5
+        #     # lin_vel_z = -2.0
+        #     # ang_vel_xy = -0.05
+        #     # orientation = -1.0
+        #     # base_height = -10.0
+        #     # dof_acc = -2.5e-7
+        #     # dof_vel = -1e-3
+        #     # feet_air_time = 0.0
+        #     collision = 0.0
+        #     # action_rate = -0.01
+        #     # dof_pos_limits = -5.0
+        #     # alive = 0.15
+        #     # hip_pos = -1.0
+        #     # contact_no_vel = -0.2
+        #     # feet_swing_height = -20.0
+        #     # contact = 0.18
 
 class ALIENGOFlatCfgPPO( LeggedRobotCfgPPO ):
     class algorithm( LeggedRobotCfgPPO.algorithm ):
         entropy_coef = 0.01
     class runner( LeggedRobotCfgPPO.runner ):
-        max_iterations = 100000 # number of policy updates
+        max_iterations = 1500 # number of policy updates
         run_name = ''
         experiment_name = 'aliengo'
 
