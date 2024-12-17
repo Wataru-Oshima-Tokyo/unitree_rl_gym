@@ -6,28 +6,17 @@ simulation_duration: 120.0
 # Simulation time step
 simulation_dt: 0.002
 # Controller update frequency
-control_decimation: 4  # Adjusted for go2 based on dynamic response needs.
+control_decimation: 10  # Adjusted for go2 based on dynamic response needs.
 
-kps: [40, 40, 40,  # FL (hip, thigh, calf)
-      40, 40, 40,  # FR (hip, thigh, calf)
-      40, 40, 40,  # RL (hip, thigh, calf)
-      40, 40, 40]  # RR (hip, thigh, calf)
+kps: [20, 20, 20,  # FL (hip, thigh, calf)
+      20, 20, 20,  # FR (hip, thigh, calf)
+      20, 20, 20,  # RL (hip, thigh, calf)
+      20, 20, 20]  # RR (hip, thigh, calf)
 
-kds: [1.0, 1.0, 1.0,  # FL (hip, thigh, calf)
-      1.0, 1.0, 1.0,  # FR (hip, thigh, calf)
-      1.0, 1.0, 1.0,  # RL (hip, thigh, calf)
-      1.0, 1.0, 1.0]  # RR (hip, thigh, calf)
-
-# kps: [20, 20, 20,  # FL (hip, thigh, calf)
-#       20, 20, 20,  # FR (hip, thigh, calf)
-#       20, 20, 20,  # RL (hip, thigh, calf)
-#       20, 20, 20]  # RR (hip, thigh, calf)
-
-# kds: [0.5, 0.5, 0.5,  # FL (hip, thigh, calf)
-#       0.5, 0.5, 0.5,  # FR (hip, thigh, calf)
-#       0.5, 0.5, 0.5,  # RL (hip, thigh, calf)
-#       0.5, 0.5, 0.5]  # RR (hip, thigh, calf)
-
+kds: [0.5, 0.5, 0.5,  # FL (hip, thigh, calf)
+      0.5, 0.5, 0.5,  # FR (hip, thigh, calf)
+      0.5, 0.5, 0.5,  # RL (hip, thigh, calf)
+      0.5, 0.5, 0.5]  # RR (hip, thigh, calf)
 
 default_angles: [0.1, 0.8, -1.5,  # FL (hip, thigh, calf)
                 -0.1, 0.8, -1.5,  # FR (hip, thigh, calf)

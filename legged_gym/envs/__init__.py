@@ -10,11 +10,12 @@ from legged_gym.envs.h1_2.h1_2_config import H1_2RoughCfg, H1_2RoughCfgPPO
 from legged_gym.envs.h1_2.h1_2_env import H1_2Robot
 from legged_gym.envs.g1.g1_config import G1RoughCfg, G1RoughCfgPPO
 from legged_gym.envs.g1.g1_env import G1Robot
+from legged_gym.envs.aliengo.aliengo_env import AlIENGORobot
 from .base.legged_robot import LeggedRobot
 
 from legged_gym.utils.task_registry import task_registry
 
-task_registry.register("aliengo", LeggedRobot, ALIENGOFlatCfg(), ALIENGOFlatCfgPPO())
+task_registry.register("aliengo", AlIENGORobot, ALIENGOFlatCfg(), ALIENGOFlatCfgPPO())
 task_registry.register("go1", LeggedRobot, GO1FlatCfg(), GO1FlatCfgPPO())
 task_registry.register("go2", LeggedRobot, GO2FlatCfg(), GO2FlatCfgPPO())
 task_registry.register("rough_go2", LeggedRobot, GO2RoughCfg(), GO2RoughCfgPPO())

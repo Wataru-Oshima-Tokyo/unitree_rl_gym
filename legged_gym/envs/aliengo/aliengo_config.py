@@ -20,6 +20,15 @@ class ALIENGOFlatCfg( LeggedRobotCfg ):
             'RR_calf_joint': -1.5,    # [rad]
         }
 
+    class domain_rand(LeggedRobotCfg.domain_rand):
+        randomize_friction = True
+        friction_range = [0.1, 1.25]
+        randomize_base_mass = True
+        added_mass_range = [-1., 5.]
+        push_robots = True
+        push_interval_s = 5
+        max_push_vel_xy = 1.5
+
     class control( LeggedRobotCfg.control ):
         # PD Drive parameters:
         control_type = 'P'
@@ -45,6 +54,10 @@ class ALIENGOFlatCfg( LeggedRobotCfg ):
         class scales( LeggedRobotCfg.rewards.scales ):
             torques = -0.0002
             dof_pos_limits = -10.0
+            alive = 0.15
+            # contact_no_vel = -0.2
+            # hip_pos = -1.0
+            # feet_swing_height = -20.0
             # collision = 0.0
             # torques = -0.00001
             # dof_pos_limits = -10.0
