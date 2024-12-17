@@ -21,8 +21,8 @@ class GO2FlatCfg( LeggedRobotCfg ):
         }
 
 
-    class terrain:
-        mesh_type = 'plane' # "heightfield" # none, plane, heightfield or trimesh
+    # class terrain:
+    #     mesh_type = 'plane' # "heightfield" # none, plane, heightfield or trimesh
 
 
     class control( LeggedRobotCfg.control ):

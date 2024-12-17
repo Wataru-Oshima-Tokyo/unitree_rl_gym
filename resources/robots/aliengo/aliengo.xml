@@ -4,7 +4,7 @@
   <default>
     <default class="aliengo">
       <geom friction="0.4" margin="0.001" condim="1"/>
-      <joint axis="0 1 0" damping="1" armature="0.1" frictionloss="0.2"/>
+      <joint axis="0 1 0" damping="0.1" armature="0.1" frictionloss="0.2"/>
       <default class="abduction">
         <joint axis="1 0 0" range="-1.22173 1.22173"/>
       </default>
@@ -33,7 +33,7 @@
   </default>
 
   <asset>
-    <mesh name="trunk" file="trunk.obj"/>
+    <mesh name="base" file="trunk.obj"/>
     <mesh name="hip" file="hip.obj"/>
     <mesh name="thigh" file="thigh.obj"/>
     <mesh name="thigh_mirror" file="thigh_mirror.obj"/>
@@ -45,11 +45,11 @@
   </asset>
 
   <worldbody>
-    <body name="trunk" pos="0 0 0.5" childclass="aliengo">
+    <body name="base" pos="0 0 0.5" childclass="aliengo">
       <joint name="floating_base_joint" type="free"/>
       <inertial pos="0.008811 0.003839 0.000273" mass="11.644"
         fullinertia="0.051944892 0.24693924 0.270948307 0.001703617 0.000235941 0.000119783"/>
-      <geom type="mesh" mesh="trunk" material="black" class="visual"/>
+      <geom type="mesh" mesh="base" material="black" class="visual"/>
       <geom size="0.3235 0.075 0.056" type="box" material="black" class="collision"/>
       <site name="imu" pos="0 0 0"/>
 
@@ -212,18 +212,18 @@
 
 
     <!-- Joint torques -->
-    <jointactuatorfrc name="FL_hip_torque" joint="FL_hip_joint" noise="0.01"/>
-    <jointactuatorfrc name="FL_thigh_torque" joint="FL_thigh_joint" noise="0.01"/>
-    <jointactuatorfrc name="FL_calf_torque" joint="FL_calf_joint" noise="0.01"/>
-    <jointactuatorfrc name="FR_hip_torque" joint="FR_hip_joint" noise="0.01"/>
-    <jointactuatorfrc name="FR_thigh_torque" joint="FR_thigh_joint" noise="0.01"/>
-    <jointactuatorfrc name="FR_calf_torque" joint="FR_calf_joint" noise="0.01"/>
-    <jointactuatorfrc name="RL_hip_torque" joint="RL_hip_joint" noise="0.01"/>
-    <jointactuatorfrc name="RL_thigh_torque" joint="RL_thigh_joint" noise="0.01"/>
-    <jointactuatorfrc name="RL_calf_torque" joint="RL_calf_joint" noise="0.01"/>
-    <jointactuatorfrc name="RR_hip_torque" joint="RR_hip_joint" noise="0.01"/>
-    <jointactuatorfrc name="RR_thigh_torque" joint="RR_thigh_joint" noise="0.01"/>
-    <jointactuatorfrc name="RR_calf_torque" joint="RR_calf_joint" noise="0.01"/>
+    <jointactuatorfrc name="FL_hip_torque" joint="FL_hip_joint" noise="0.01" />
+    <jointactuatorfrc name="FL_thigh_torque" joint="FL_thigh_joint" noise="0.01" />
+    <jointactuatorfrc name="FL_calf_torque" joint="FL_calf_joint" noise="0.01" />
+    <jointactuatorfrc name="FR_hip_torque" joint="FR_hip_joint" noise="0.01" />
+    <jointactuatorfrc name="FR_thigh_torque" joint="FR_thigh_joint" noise="0.01" />
+    <jointactuatorfrc name="FR_calf_torque" joint="FR_calf_joint" noise="0.01" />
+    <jointactuatorfrc name="RL_hip_torque" joint="RL_hip_joint" noise="0.01" />
+    <jointactuatorfrc name="RL_thigh_torque" joint="RL_thigh_joint" noise="0.01" />
+    <jointactuatorfrc name="RL_calf_torque" joint="RL_calf_joint" noise="0.01" />
+    <jointactuatorfrc name="RR_hip_torque" joint="RR_hip_joint" noise="0.01" />
+    <jointactuatorfrc name="RR_thigh_torque" joint="RR_thigh_joint" noise="0.01" />
+    <jointactuatorfrc name="RR_calf_torque" joint="RR_calf_joint" noise="0.01" />
 
 
     <!-- IMU sensors -->
@@ -233,7 +233,14 @@
     <framepos name="frame_pos" objtype="site" objname="imu" />
     <framelinvel name="frame_vel" objtype="site" objname="imu" />
     <!-- Base position and velocity -->
-    <framepos name="base_pos" objtype="body" objname="trunk"/>
-    <framelinvel name="base_vel" objtype="body" objname="trunk"/>
+    <framepos name="base_pos" objtype="body" objname="base"/>
+    <framelinvel name="base_vel" objtype="body" objname="base"/>
   </sensor>
+  <keyframe>
+    <key name="home" 
+        qpos="0 0 0.445 1 0 0 0 
+              0.1 0.8 -1.5  -0.1 0.8 -1.5  
+              0.1 1.0 -1.5  -0.1 1.0 -1.5"
+        ctrl="0 0.9 -1.8 0 0.9 -1.8 0 0.9 -1.8 0 0.9 -1.8" />
+  </keyframe>
 </mujoco>
