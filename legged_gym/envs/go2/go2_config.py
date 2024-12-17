@@ -101,7 +101,7 @@ class GO2RoughCfg( LeggedRobotCfg ):
         terrain_width = 8.
         num_rows= 10 # number of terrain rows (levels)
         num_cols = 20 # number of terrain cols (types)
-        # terrain types: [smooth slope, rough slope, stairs up, stairs down, discrete]
+        terrain types: [smooth slope, rough slope, stairs up, stairs down, discrete]
         # terrain_proportions = [0.1, 0.1, 0.35, 0.25, 0.2]
         terrain_proportions = [0.1, 0.2, 0.3, 0.45, 0.6, 0.8, 1.0]
         # trimesh only:
