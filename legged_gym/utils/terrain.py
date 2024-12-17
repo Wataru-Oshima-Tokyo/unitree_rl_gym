@@ -11,6 +11,7 @@ class Terrain:
         self.cfg = cfg
         self.num_robots = num_robots
         self.type = cfg.mesh_type
+        
         if self.type in ["none", 'plane']:
             return
         self.env_length = cfg.terrain_length
@@ -41,7 +42,8 @@ class Terrain:
                                                                                             self.cfg.horizontal_scale,
                                                                                             self.cfg.vertical_scale,
                                                                                             self.cfg.slope_treshold)
-    
+        # self._adjust_env_origins_for_robots(self.num_robots)
+        
     def randomized_terrain(self):
         for k in range(self.cfg.num_sub_terrains):
             # Env coordinates in the world
@@ -68,18 +70,19 @@ class Terrain:
             (i, j) = np.unravel_index(k, (self.cfg.num_rows, self.cfg.num_cols))
 
             terrain = terrain_utils.SubTerrain("terrain",
-                              width=self.width_per_env_pixels,
                               length=self.width_per_env_pixels,
+                              width=self.length_per_env_pixels ,
                               vertical_scale=self.vertical_scale,
                               horizontal_scale=self.horizontal_scale)
 
             eval(terrain_type)(terrain, **self.cfg.terrain_kwargs.terrain_kwargs)
             self.add_terrain_to_map(terrain, i, j)
-    
+
+
     def make_terrain(self, choice, difficulty):
         terrain = terrain_utils.SubTerrain(   "terrain",
-                                width=self.width_per_env_pixels,
                                 length=self.width_per_env_pixels,
+                                width=self.length_per_env_pixels,
                                 vertical_scale=self.cfg.vertical_scale,
                                 horizontal_scale=self.cfg.horizontal_scale)
         slope = difficulty * 0.4
@@ -113,6 +116,7 @@ class Terrain:
             pit_terrain(terrain, depth=pit_depth, platform_size=4.)
         
         return terrain
+
 
     def add_terrain_to_map(self, terrain, row, col):
         i = row

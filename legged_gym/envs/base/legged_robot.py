@@ -40,7 +40,13 @@ class LeggedRobot(BaseTask):
         self._parse_cfg(self.cfg)
         super().__init__(self.cfg, sim_params, physics_engine, sim_device, headless)
 
-        if not self.headless:
+        if not self.headless and self.cfg.viewer.follow:
+            # Suppose env_origins[0] is something like [x0, y0, z0] in a torch.Tensor
+            origin = self.env_origins[self.cfg.viewer.ref_env].cpu().numpy()   # -> array([x0, y0, z0])
+            camera_pos = [origin[0], origin[1], origin[2] + 6.0]
+            camera_target = [origin[0]+1.0, origin[1], origin[2]+3.0]
+            self.set_camera(camera_pos, camera_target)
+        elif not self.headless :
             self.set_camera(self.cfg.viewer.pos, self.cfg.viewer.lookat)
         self._init_buffers()
         self._prepare_reward_function()
@@ -259,6 +265,7 @@ class LeggedRobot(BaseTask):
     def set_camera(self, position, lookat):
         """ Set camera position and direction
         """
+
         cam_pos = gymapi.Vec3(position[0], position[1], position[2])
         cam_target = gymapi.Vec3(lookat[0], lookat[1], lookat[2])
         self.gym.viewer_camera_look_at(self.viewer, None, cam_pos, cam_target)

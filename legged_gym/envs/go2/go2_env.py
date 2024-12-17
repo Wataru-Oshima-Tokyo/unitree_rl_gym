@@ -8,7 +8,7 @@ import torch
 from legged_gym.utils.terrain import Terrain
 from isaacgym.terrain_utils import *
 
-class ALIENGORobot(LeggedRobot):
+class Go2Robot(LeggedRobot):
 
     def reset_idx(self, env_ids):
         """ Reset some environments.
@@ -212,7 +212,3 @@ class ALIENGORobot(LeggedRobot):
         # z += 0.1  # for example
         
         return x, y, z
-
-    def _reward_alive(self):
-        # Reward for staying alive
-        return 1.0
