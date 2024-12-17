@@ -13,7 +13,6 @@ class Terrain:
         self.type = cfg.mesh_type
         
         if self.type in ["none", 'plane']:
-            
             return
         self.env_length = cfg.terrain_length
         self.env_width = cfg.terrain_width
@@ -45,28 +44,7 @@ class Terrain:
                                                                                             self.cfg.slope_treshold)
         # self._adjust_env_origins_for_robots(self.num_robots)
         
-    def _adjust_env_origins_for_robots(self, num_robots):
-        """Flatten (num_rows, num_cols, 3) into (num_sub_terrains, 3),
-        then produce a final array of shape (num_robots, 3)."""
-        num_sub_terrains = self.cfg.num_sub_terrains  # = num_rows * num_cols
-        flattened = self.env_origins.reshape(-1, 3)   # shape: (num_sub_terrains, 3)
-
-        # If num_robots <= num_sub_terrains, we can pick the first 'num_robots' sub-tiles directly.
-        # Or randomize if you want a random distribution.
-        if num_robots <= num_sub_terrains:
-            final_origins = flattened[:num_robots]
-        else:
-            # More robots than sub-terrains? Sample or replicate
-            final_origins = np.zeros((num_robots, 3), dtype=np.float32)
-            for i in range(num_robots):
-                idx = np.random.randint(0, num_sub_terrains)
-                final_origins[i] = flattened[idx]
-
-        # Overwrite self.env_origins with the new shape (num_robots, 3)
-        self.env_origins = final_origins
-
     def randomized_terrain(self):
-        self.calculate_map_center()
         for k in range(self.cfg.num_sub_terrains):
             # Env coordinates in the world
             (i, j) = np.unravel_index(k, (self.cfg.num_rows, self.cfg.num_cols))
@@ -77,7 +55,6 @@ class Terrain:
             self.add_terrain_to_map(terrain, i, j)
         
     def curiculum(self):
-        self.calculate_map_center()
         for j in range(self.cfg.num_cols):
             for i in range(self.cfg.num_rows):
                 difficulty = i / self.cfg.num_rows
@@ -93,8 +70,8 @@ class Terrain:
             (i, j) = np.unravel_index(k, (self.cfg.num_rows, self.cfg.num_cols))
 
             terrain = terrain_utils.SubTerrain("terrain",
-                              width=self.width_per_env_pixels,
                               length=self.width_per_env_pixels,
+                              width=self.length_per_env_pixels ,
                               vertical_scale=self.vertical_scale,
                               horizontal_scale=self.horizontal_scale)
 
@@ -102,32 +79,10 @@ class Terrain:
             self.add_terrain_to_map(terrain, i, j)
 
 
-    def _compute_env_origins_curriculum(self, num_envs: int, origins: torch.Tensor) -> torch.Tensor:
-        """Compute the origins of the environments defined by the sub-terrains origins."""
-        # extract number of rows and cols
-        num_rows = self.cfg.num_rows
-        num_cols = self.cfg.num_cols
-        # maximum initial level possible for the terrains
-        max_init_level = num_rows - 1
-        # store maximum terrain level possible
-        self.max_terrain_level = num_rows
-        # define all terrain levels and types available
-        self.terrain_levels = torch.randint(0, max_init_level + 1, (num_envs,), device=self.device)
-        self.terrain_types = torch.div(
-            torch.arange(num_envs, device=self.device),
-            (num_envs / num_cols),
-            rounding_mode="floor",
-        ).to(torch.long)
-        # create tensor based on number of environments
-        env_origins = torch.zeros(num_envs, 3, device=self.device)
-        env_origins[:] = origins[self.terrain_levels, self.terrain_types]
-        return env_origins
-
-
     def make_terrain(self, choice, difficulty):
         terrain = terrain_utils.SubTerrain(   "terrain",
-                                width=self.width_per_env_pixels,
                                 length=self.width_per_env_pixels,
+                                width=self.length_per_env_pixels,
                                 vertical_scale=self.cfg.vertical_scale,
                                 horizontal_scale=self.cfg.horizontal_scale)
         slope = difficulty * 0.4
@@ -162,20 +117,6 @@ class Terrain:
         
         return terrain
 
-
-    def calculate_map_center(self):
-        """Calculate the center of the map in world coordinates."""
-        center_x_pixel = self.tot_rows // 2
-        center_y_pixel = self.tot_cols // 2
-
-        # Convert from pixels to world coordinates
-        center_x_world = center_x_pixel * self.cfg.horizontal_scale
-        center_y_world = center_y_pixel * self.cfg.horizontal_scale
-
-        # Calculate the height at the center (in world coordinates)
-        center_z_world = self.height_field_raw[center_x_pixel, center_y_pixel] * self.cfg.vertical_scale
-        print(f"the center of the map in terrain.py is {np.array([center_x_world, center_y_world, center_z_world])}")
-        return np.array([center_x_world, center_y_world, center_z_world])
 
     def add_terrain_to_map(self, terrain, row, col):
         i = row

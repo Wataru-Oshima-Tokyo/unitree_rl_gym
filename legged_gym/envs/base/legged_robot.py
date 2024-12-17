@@ -16,7 +16,6 @@ from legged_gym.envs.base.base_task import BaseTask
 from legged_gym.utils.math import wrap_to_pi
 from legged_gym.utils.isaacgym_utils import get_euler_xyz as get_euler_xyz_in_tensor
 from legged_gym.utils.helpers import class_to_dict
-from legged_gym.utils.terrain import Terrain
 from .legged_robot_config import LeggedRobotCfg
 
 class LeggedRobot(BaseTask):
@@ -41,7 +40,13 @@ class LeggedRobot(BaseTask):
         self._parse_cfg(self.cfg)
         super().__init__(self.cfg, sim_params, physics_engine, sim_device, headless)
 
-        if not self.headless:
+        if not self.headless and self.cfg.viewer.follow:
+            # Suppose env_origins[0] is something like [x0, y0, z0] in a torch.Tensor
+            origin = self.env_origins[self.cfg.viewer.ref_env].cpu().numpy()   # -> array([x0, y0, z0])
+            camera_pos = [origin[0], origin[1], origin[2] + 6.0]
+            camera_target = [origin[0]+1.0, origin[1], origin[2]+3.0]
+            self.set_camera(camera_pos, camera_target)
+        elif not self.headless :
             self.set_camera(self.cfg.viewer.pos, self.cfg.viewer.lookat)
         self._init_buffers()
         self._prepare_reward_function()
@@ -254,28 +259,13 @@ class LeggedRobot(BaseTask):
         """
         self.up_axis_idx = 2 # 2 for z, 1 for y -> adapt gravity accordingly
         self.sim = self.gym.create_sim(self.sim_device_id, self.graphics_device_id, self.physics_engine, self.sim_params)
-        print(f"\033[34mTerrain type is {self.cfg.terrain.mesh_type}\033[0m")
-        # 1) Instantiate your Terrain class
-        # (only if mesh_type is 'heightfield' or 'trimesh')
-        if self.cfg.terrain.mesh_type in ["heightfield", "trimesh"]:
-            # Pass in your terrain config and the number of envs (robots)
-            self.terrain = Terrain(self.cfg.terrain, self.num_envs)
-
-            # 2) Register the heightfield or trimesh with Isaac Gym
-            if self.cfg.terrain.mesh_type == "heightfield":
-                self._create_heightfield()
-            elif self.cfg.terrain.mesh_type == "trimesh":
-                self._create_trimesh()
-        else:
-            # Fallback: just create a flat plane if mesh_type is "plane" or "none"
-            self._create_ground_plane()
-        # After terrain creation, set the camera to center
-
+        self._create_ground_plane()
         self._create_envs()
 
     def set_camera(self, position, lookat):
         """ Set camera position and direction
         """
+
         cam_pos = gymapi.Vec3(position[0], position[1], position[2])
         cam_target = gymapi.Vec3(lookat[0], lookat[1], lookat[2])
         self.gym.viewer_camera_look_at(self.viewer, None, cam_pos, cam_target)
@@ -428,7 +418,7 @@ class LeggedRobot(BaseTask):
         if self.custom_origins:
             self.root_states[env_ids] = self.base_init_state
             self.root_states[env_ids, :3] += self.env_origins[env_ids]
-            # self.root_states[env_ids, :2] += torch_rand_float(-1., 1., (len(env_ids), 2), device=self.device) # xy position within 1m of the center
+            self.root_states[env_ids, :2] += torch_rand_float(-1., 1., (len(env_ids), 2), device=self.device) # xy position within 1m of the center
         else:
             self.root_states[env_ids] = self.base_init_state
             self.root_states[env_ids, :3] += self.env_origins[env_ids]
@@ -582,65 +572,6 @@ class LeggedRobot(BaseTask):
         plane_params.restitution = self.cfg.terrain.restitution
         self.gym.add_ground(self.sim, plane_params)
 
-    def _create_heightfield(self):
-        hf_data = self.terrain.height_field_raw.astype(np.int16)
-
-        nb_rows, nb_cols = hf_data.shape
-        # row_scale = self.cfg.terrain.horizontal_scale
-        # col_scale = self.cfg.terrain.horizontal_scale  # or a different value if not uniform
-        # vertical_scale = self.cfg.terrain.vertical_scale
-
-        # Create HeightFieldParams
-        hf_params = gymapi.HeightFieldParams()
-        hf_params.nbRows = nb_rows
-        hf_params.nbColumns = nb_cols
-        hf_params.row_scale = self.cfg.terrain.horizontal_scale
-        hf_params.column_scale = self.cfg.terrain.horizontal_scale  # or a different value if not uniform
-        hf_params.vertical_scale =  self.cfg.terrain.vertical_scale
-        hf_params.static_friction = self.cfg.terrain.static_friction
-        hf_params.dynamic_friction = self.cfg.terrain.dynamic_friction
-        hf_params.restitution = self.cfg.terrain.restitution
-        # Optionally set min/max height
-        # hf_params.depthBounds = [-1.0, 1.0]  # Adjust depending on your height extremes
-        hf_params.transform.p.x = -self.terrain.cfg.border_size
-        hf_params.transform.p.y = -self.terrain.cfg.border_size
-        hf_params.transform.p.z = 0.0
-
-        # Ensure the data is shape (nb_rows, nb_cols)
-        hf_data = hf_data.reshape(nb_rows, nb_cols)
-
-        # Now call add_heightfield
-        hf_data_flat = hf_data.ravel()  # shape is now (nb_rows*nb_cols,)
-        self.center_world_x = -self.terrain.cfg.border_size + (nb_cols * self.cfg.terrain.horizontal_scale / 2.0)
-        self.center_world_y = -self.terrain.cfg.border_size + (nb_rows * self.cfg.terrain.horizontal_scale / 2.0)
-
-        # total_length = self.cfg.terrain.num_rows * self.cfg.terrain.terrain_length
-        # total_width  = self.cfg.terrain.num_cols * self.cfg.terrain.terrain_width
-        camera_pos = [self.center_world_x, self.center_world_y - 5.0, 4.0]
-        print(f"center of the map in isaacgym is {camera_pos}")
-        camera_lookat = [self.center_world_x, self.center_world_y, 0.0]
-        self.cfg.viewer.pos = camera_pos
-        self.cfg.viewer.lookat =camera_lookat
-
-        self.gym.add_heightfield(self.sim, hf_data_flat, hf_params)
-
-
-    def _create_trimesh(self):
-        scale_factor = 1.0 # or whatever
-        vertices = self.terrain.vertices.astype(np.float32)
-        vertices *= scale_factor
-
-        triangles = self.terrain.triangles.astype(np.uint32)
-
-        vertices_1d = vertices.astype(np.float32).ravel()   # shape becomes (3*N,)
-        triangles_1d = triangles.astype(np.uint32).ravel()  # shape becomes (3*M,)
-
-        tm_params = gymapi.TriangleMeshParams()
-        tm_params.nb_vertices  = len(vertices_1d) // 3
-        tm_params.nb_triangles = len(triangles_1d) // 3
-
-        self.gym.add_triangle_mesh(self.sim, vertices_1d, triangles_1d, tm_params)
-
     def _create_envs(self):
         """ Creates environments:
              1. loads the robot URDF/MJCF asset,
@@ -732,42 +663,17 @@ class LeggedRobot(BaseTask):
         """ Sets environment origins. On rough terrain the origins are defined by the terrain platforms.
             Otherwise create a grid.
         """
-        self.custom_origins = True
-        # assume self.terrain already created
-        terrain_origins = self.terrain.env_origins  # shape (num_rows, num_cols, 3)
-        # flatten or rearrange as needed:
-        self.env_origins = torch.tensor(terrain_origins.reshape(-1, 3), device=self.device, dtype=torch.float)
-
-        # self.custom_origins = True
+      
+        self.custom_origins = False
         self.env_origins = torch.zeros(self.num_envs, 3, device=self.device, requires_grad=False)
-        # # create a grid of robots
-        # num_cols = np.floor(np.sqrt(self.num_envs))
-        # num_rows = np.ceil(self.num_envs / num_cols)
-        # xx, yy = torch.meshgrid(torch.arange(num_rows), torch.arange(num_cols))
-        # spacing = self.cfg.env.env_spacing
-        # self.env_origins[:, 0] = spacing * xx.flatten()[:self.num_envs]
-        # self.env_origins[:, 1] = spacing * yy.flatten()[:self.num_envs]
-        # self.env_origins[:, 2] = 0.
-
-
-    # def _get_env_origins(self):
-    #     # If you want to spawn everyone near the global center
-    #     self.custom_origins = True
-
-    #     center_x = (self.cfg.terrain.num_rows * self.cfg.terrain.terrain_length) / 2
-    #     center_y = (self.cfg.terrain.num_cols * self.cfg.terrain.terrain_width) / 2
-
-    #     self.env_origins = torch.zeros(self.num_envs, 3, device=self.device, dtype=torch.float)
-
-    #     for i in range(self.num_envs):
-    #         # Random offset of ±2m from global center
-    #         offset_xy = torch_rand_float(-2.0, 2.0, (2,), device=self.device)
-    #         offset_xy = offset_xy.squeeze(0)  # shape becomes (2,)
-    #         self.env_origins[i, 0] = center_x + offset_xy[0]
-    #         self.env_origins[i, 1] = center_y + offset_xy[1]
-    #         # If your terrain’s Z=0 is the ground, you might want a slight positive spawn
-    #         self.env_origins[i, 2] = 0.2  
-
+        # create a grid of robots
+        num_cols = np.floor(np.sqrt(self.num_envs))
+        num_rows = np.ceil(self.num_envs / num_cols)
+        xx, yy = torch.meshgrid(torch.arange(num_rows), torch.arange(num_cols))
+        spacing = self.cfg.env.env_spacing
+        self.env_origins[:, 0] = spacing * xx.flatten()[:self.num_envs]
+        self.env_origins[:, 1] = spacing * yy.flatten()[:self.num_envs]
+        self.env_origins[:, 2] = 0.
 
     def _parse_cfg(self, cfg):
         self.dt = self.cfg.control.decimation * self.sim_params.dt
