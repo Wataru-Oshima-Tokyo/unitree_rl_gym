@@ -94,7 +94,7 @@ class ALIENGOFlatCfgPPO( LeggedRobotCfgPPO ):
 
 class ALIENGORoughCfg( LeggedRobotCfg ):
     class init_state( LeggedRobotCfg.init_state ):
-        pos = [0.0, 0.0, 0.45] # x,y,z [m]
+        pos = [0.0, 0.0, 0.6] # x,y,z [m]
         default_joint_angles = { # = target angles [rad] when action = 0.0
             'FL_hip_joint': 0.1,   # [rad]
             'RL_hip_joint': 0.1,   # [rad]
@@ -148,7 +148,7 @@ class ALIENGORoughCfg( LeggedRobotCfg ):
         slope_treshold = 0.75 # slopes above this threshold will be corrected to vertical surfaces
 
     class viewer( LeggedRobotCfg.viewer ):
-        ref_env = 1
+        ref_env = 0
         follow = True
         pos = [70, 0, 6]  # [m]
         lookat = [71., 5, 3.]  # [m]
@@ -167,18 +167,22 @@ class ALIENGORoughCfg( LeggedRobotCfg ):
         file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/aliengo/urdf/aliengo.urdf'
         name = "aliengo"
         foot_name = "foot"
-        penalize_contacts_on = ["thigh", "calf"]
+        penalize_contacts_on = ["thigh", "calf", "base"]
         terminate_after_contacts_on = ["base"]
-        self_collisions = 1 # 1 to disable, 0 to enable...bitwise filter
+        termination_duration = 3 #seconds
+        self_collisions = 0 # 1 to disable, 0 to enable...bitwise filter
   
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
         base_height_target = 0.43
         only_positive_rewards = True # if true negative total rewards are clipped at zero (avoids early termination problems)
         class scales( LeggedRobotCfg.rewards.scales ):
+            tracking_lin_vel = 2.0
+            tracking_ang_vel = 1.0
             torques = -0.0002
             dof_pos_limits = -10.0
-            alive = 0.15
+            # alive = 0.15
+            contact_no_vel = -0.2
             # collision = 0.0
             # torques = -0.00001
             # dof_pos_limits = -10.0
@@ -207,5 +211,6 @@ class ALEINGORoughCfgPPO( LeggedRobotCfgPPO ):
     class algorithm( LeggedRobotCfgPPO.algorithm ):
         entropy_coef = 0.01
     class runner( LeggedRobotCfgPPO.runner ):
+        max_iterations = 10000 # number of policy updates
         run_name = ''
         experiment_name = 'rough_aliengo'

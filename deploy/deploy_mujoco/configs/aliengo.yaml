@@ -1,4 +1,4 @@
-policy_path: "{LEGGED_GYM_ROOT_DIR}/logs/aliengo/exported/policies/policy_1.pt"
+policy_path: "{LEGGED_GYM_ROOT_DIR}/logs/rough_aliengo/exported/policies/policy_1.pt"
 xml_path: "{LEGGED_GYM_ROOT_DIR}/resources/robots/aliengo/scene.xml"
 
 # Total simulation time

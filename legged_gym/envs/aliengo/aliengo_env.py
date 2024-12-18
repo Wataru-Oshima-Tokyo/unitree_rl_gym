@@ -7,6 +7,7 @@ from isaacgym import gymtorch, gymapi, gymutil
 import torch
 from legged_gym.utils.terrain import Terrain
 from isaacgym.terrain_utils import *
+from legged_gym.utils.math import wrap_to_pi
 
 class ALIENGORobot(LeggedRobot):
 
@@ -35,6 +36,7 @@ class ALIENGORobot(LeggedRobot):
         self.feet_air_time[env_ids] = 0.
         self.episode_length_buf[env_ids] = 0
         self.reset_buf[env_ids] = 1
+        self.contact_duration_buf[env_ids] = 0.0
         # fill extras
         self.extras["episode"] = {}
         for key in self.episode_sums.keys():
@@ -213,6 +215,88 @@ class ALIENGORobot(LeggedRobot):
         
         return x, y, z
 
+    def check_termination(self):
+        """
+        Check if environments need to be reset.
+        We extend termination if the body parts specified by self.termination_contact_indices
+        have been in contact above the force threshold (>1.0) for more than 3 seconds total.
+        """
+        # Force threshold check (shape: [num_envs, num_contact_indices])
+        contact_threshold_exceeded = (torch.norm(
+            self.contact_forces[:, self.termination_contact_indices, :], dim=-1
+        ) > 1.0)
+        # For each environment, if ANY contact index exceeds force threshold, treat it as contact
+        in_contact = torch.any(contact_threshold_exceeded, dim=1)
+
+        # Update contact duration buffer:
+        # - If in_contact is True, increment by dt; else reset to 0.
+        # Assume self.dt is the timestep in seconds (e.g. 1/60 if 60Hz).
+        self.contact_duration_buf[in_contact] += self.dt
+        # self.contact_duration_buf[~in_contact] = 0.0
+        # Now we have a termination flag if contact duration > 3 seconds
+        self.reset_buf = self.contact_duration_buf > self.cfg.asset.termination_duration
+        # Orientation-based termination
+        # If pitch or roll goes out of bounds, set reset
+        # rpy_condition = torch.logical_or(torch.abs(self.rpy[:, 1]) > 1.0,  # pitch
+        #                                 torch.abs(self.rpy[:, 0]) > 0.8) # roll
+        # self.reset_buf |= rpy_condition
+
+        # Timeout termination
+        self.time_out_buf = self.episode_length_buf > self.max_episode_length  # no terminal reward for time-outs
+        self.reset_buf |= self.time_out_buf
+        # """ Check if environments need to be reset
+        # """
+        # self.reset_buf = torch.any(torch.norm(self.contact_forces[:, self.termination_contact_indices, :], dim=-1) > 1., dim=1)
+        # self.reset_buf |= torch.logical_or(torch.abs(self.rpy[:,1])>1.0, torch.abs(self.rpy[:,0])>0.8)
+        # self.time_out_buf = self.episode_length_buf > self.max_episode_length # no terminal reward for time-outs
+        # self.reset_buf |= self.time_out_buf
+
+    def update_feet_state(self):
+        self.gym.refresh_rigid_body_state_tensor(self.sim)
+        
+        self.feet_state = self.rigid_body_states_view[:, self.feet_indices, :]
+        self.feet_pos = self.feet_state[:, :, :3]
+        self.feet_vel = self.feet_state[:, :, 7:10]
+
+    def _post_physics_step_callback(self):
+        """ Callback called before computing terminations, rewards, and observations
+            Default behaviour: Compute ang vel command based on target and heading, compute measured terrain heights and randomly push robots
+        """
+        # 
+        env_ids = (self.episode_length_buf % int(self.cfg.commands.resampling_time / self.dt)==0).nonzero(as_tuple=False).flatten()
+        self._resample_commands(env_ids)
+        if self.cfg.commands.heading_command:
+            forward = quat_apply(self.base_quat, self.forward_vec)
+            heading = torch.atan2(forward[:, 1], forward[:, 0])
+            self.commands[:, 2] = torch.clip(0.5*wrap_to_pi(self.commands[:, 3] - heading), -1., 1.)
+
+        if self.cfg.domain_rand.push_robots and  (self.common_step_counter % self.cfg.domain_rand.push_interval == 0):
+            self._push_robots()
+        self.update_feet_state()
+
     def _reward_alive(self):
         # Reward for staying alive
         return 1.0
+
+    def _init_foot(self):
+        self.feet_num = len(self.feet_indices)
+        # print(self.feet_indices)
+        rigid_body_state = self.gym.acquire_rigid_body_state_tensor(self.sim)
+        self.rigid_body_states = gymtorch.wrap_tensor(rigid_body_state)
+        self.rigid_body_states_view = self.rigid_body_states.view(self.num_envs, -1, 13)
+        self.feet_state = self.rigid_body_states_view[:, self.feet_indices, :]
+        self.feet_pos = self.feet_state[:, :, :3]
+        self.feet_vel = self.feet_state[:, :, 7:10]
+
+    def _init_buffers(self):
+        super()._init_buffers()
+        self._init_foot()
+
+    def _reward_contact_no_vel(self):
+        # Penalize contact with no velocity
+        contact = torch.norm(self.contact_forces[:, self.feet_indices, :3], dim=2) > 1.
+        # print(contact)
+        contact_feet_vel = self.feet_vel * contact.unsqueeze(-1)
+        # print(contact_feet_vel)
+        penalize = torch.square(contact_feet_vel[:, :, :3])
+        return torch.sum(penalize, dim=(1,2))
