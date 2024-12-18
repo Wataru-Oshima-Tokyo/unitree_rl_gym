@@ -109,11 +109,11 @@ if __name__ == "__main__":
 
             # Update command every 3 seconds
             current_time = time.time()
-            if current_time - last_cmd_update > 3.0:
-                cmd = np.random.uniform(-0.3, 0.3, size=3).astype(np.float32)  # Random linear and angular velocities
-                # cmd = np.array([0.0, 0.5, 0.0]) # linear and angular velocities
-                last_cmd_update = current_time
-                print(f"New random cmd: {cmd}")
+            # if current_time - last_cmd_update > 3.0:
+            #     cmd = np.random.uniform(-0.5, 0.5, size=3).astype(np.float32)  # Random linear and angular velocities
+            #     # cmd = np.array([0.0, 0.5, 0.0]) # linear and angular velocities
+            #     last_cmd_update = current_time
+            #     print(f"New random cmd: {cmd}")
             tau = pd_control(target_dof_pos, d.qpos[7:], kps, np.zeros_like(kds), d.qvel[6:], kds)
             d.ctrl[:] = tau
             mujoco.mj_step(m, d)
